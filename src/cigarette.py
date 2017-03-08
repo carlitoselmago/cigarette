@@ -2,22 +2,61 @@ import cv2
 import numpy as np;
 from pyo import *
 from time import sleep
+import math
 
-
+def ease(o,d):
+    #return (o+d)/4
+    return d
 
 def show_webcam(mirror=False):
     
     #SYNTH ::::::::::::::::::::::::::::::::
     
     # Roland JP-8000 Supersaw emulator.
-    freq = 0
+    freq = 100
 
     s = Server(duplex=0).boot()
-
-    # Roland JP-8000 Supersaw emulator.
-    lfo4 = Sine(freq=freq).range(0.1, 0.75)
-    osc4 = SuperSaw(freq=freq, detune=lfo4, mul=0.3).out()
-    osc4.volume=-200
+    
+    synths=[]
+    
+    #1
+    lfo = Sine(freq=freq).range(0.8, 0.2)
+    lfoo = Sine(freq=.25, mul=10, add=30)
+    #osc = SuperSaw(freq=freq, detune=lfo4, mul=0.2)
+    osc = Blit(freq=[100, 99.7]*lfoo, harms=lfoo, mul=.3)
+    delay= Delay(osc, delay=[.8,.8], feedback=.9, mul=1).out()
+    osc.mul=0
+    
+    synths.append(osc)
+    
+    #2
+    lfo2 = Sine(freq=freq).range(0.8, 0.2)
+    osc2 = SuperSaw(freq=freq, detune=lfo2, mul=0.2)
+    delay= Delay(osc2, delay=[.8,.8], feedback=.9, mul=1).out()
+    osc2.mul=0
+    
+    synths.append(osc2)
+    
+    #3
+    """
+    ind = LinTable([(0,20), (200,5), (1000,2), (8191,1)])
+    m = Metro(4).play()
+    tr = TrigEnv(m, table=ind, dur=4)
+    f = CrossFM(carrier=[250.5,250], ratio=[.2499,.2502], ind1=tr, ind2=tr, mul=.2).out()
+    delay= Delay(f, delay=[.8,.8], feedback=.9, mul=1).out()
+    f.mul=0
+    
+    synths.append(f)
+    """
+    
+    
+    mm = Mixer(outs=2, chnls=len(synths), time=.025)
+    
+    
+    
+    for i,synth in enumerate(synths):
+        mm.addInput(i,synth)
+    
     s.start()
     
     #END SYNTH ::::::::::::::::::::::::::::
@@ -78,11 +117,21 @@ def show_webcam(mirror=False):
         img=im_with_keypoints
         
         if len(keypoints)>0:
-            X= keypoints[0].pt[0]
-            osc4.freq=X
-            osc4.volume=2
+            
+            for i,point in enumerate(keypoints):
+                if i<len(synths):
+                    X,Y = point.pt
+                    synths[i].freq=ease(synths[i].freq,X)
+                    synths[i].mul=1
+                
+            
+            
         else:
-            osc4.freq=0
+            for i,synth in enumerate(synths):
+                synths[i].mul=0 
+            #osc.mul=0
+            pass
+           
         
         cv2.imshow('my webcam', img)
         if cv2.waitKey(1) == 27: 
