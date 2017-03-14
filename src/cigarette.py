@@ -20,22 +20,25 @@ def show_webcam(mirror=False):
     synths=[]
     
     #1
-    lfo = Sine(freq=freq).range(0.8, 0.2)
-    lfoo = Sine(freq=.25, mul=10, add=30)
-    #osc = SuperSaw(freq=freq, detune=lfo4, mul=0.2)
-    osc = Blit(freq=[100, 99.7]*lfoo, harms=lfoo, mul=.3)
-    delay= Delay(osc, delay=[.8,.8], feedback=.9, mul=1).out()
-    osc.mul=0
     
-    synths.append(osc)
+    lfo2 = Sine(freq=freq).range(0.8, 0.2)
+    synths.append( SuperSaw(freq=freq, detune=lfo2, mul=0.2))
+    synths[0].mul=0
+    
+    
+
     
     #2
-    lfo2 = Sine(freq=freq).range(0.8, 0.2)
-    osc2 = SuperSaw(freq=freq, detune=lfo2, mul=0.2)
-    delay= Delay(osc2, delay=[.8,.8], feedback=.9, mul=1).out()
-    osc2.mul=0
     
-    synths.append(osc2)
+    lfo = Sine(freq=freq).range(0.1, 0.1)
+    lfoo = Sine(freq=.25, mul=3, add=10)
+    #osc = SuperSaw(freq=freq, detune=lfo4, mul=0.2)
+    synths.append( Blit(freq=[100, 99.7]*lfoo, harms=lfoo, mul=.3).out())
+    synths[1].mul=0
+    
+    
+  
+    
     
     #3
     """
@@ -49,13 +52,15 @@ def show_webcam(mirror=False):
     synths.append(f)
     """
     
-    
+    fxs=[]
     mm = Mixer(outs=2, chnls=len(synths), time=.025)
     
-    
-    
     for i,synth in enumerate(synths):
+        #fxs.append(Freeverb(mm[i], size=.8, damp=.8, mul=.5).out())
+        fxs.append(Delay(synths[i], delay=[.8,.8], feedback=.8, mul=1).out())
         mm.addInput(i,synth)
+        mm.setAmp(i,1,.5)
+    
     
     s.start()
     
@@ -75,7 +80,7 @@ def show_webcam(mirror=False):
                 
         # binarize
         thresh = 1
-        maxValue = 220
+        maxValue = 215
         th,img = cv2.threshold(img, 220, 255,cv2.THRESH_BINARY)
         
         #blobs
@@ -92,7 +97,7 @@ def show_webcam(mirror=False):
 
         # Filter by Area.
         params.filterByArea = True
-        params.minArea = 30
+        params.minArea = 10
 
         # Filter by Circularity
         params.filterByCircularity = True
@@ -104,7 +109,7 @@ def show_webcam(mirror=False):
 
         # Filter by Inertia
         params.filterByInertia =True
-        params.minInertiaRatio = 0.5
+        params.minInertiaRatio = 0.1
 
         detector = cv2.SimpleBlobDetector(params)
 
@@ -120,6 +125,7 @@ def show_webcam(mirror=False):
             
             for i,point in enumerate(keypoints):
                 if i<len(synths):
+                    
                     X,Y = point.pt
                     synths[i].freq=ease(synths[i].freq,X)
                     synths[i].mul=1
@@ -128,6 +134,7 @@ def show_webcam(mirror=False):
             
         else:
             for i,synth in enumerate(synths):
+                
                 synths[i].mul=0 
             #osc.mul=0
             pass
