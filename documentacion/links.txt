@@ -1,0 +1,1 @@
+https://stackoverflow.com/questions/11420748/setting-camera-parameters-in-opencv-python
