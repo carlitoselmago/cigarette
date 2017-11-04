@@ -1,0 +1,31 @@
+#V4L2/CTRL/0.0.2
+APP{"guvcview 2.0.5"}
+# control data
+#Brightness
+ID{0x00980900};CHK{0:255:1:128}=VAL{54}
+#Contrast
+ID{0x00980901};CHK{0:255:1:32}=VAL{64}
+#Saturation
+ID{0x00980902};CHK{0:255:1:32}=VAL{0}
+#White Balance Temperature, Auto
+ID{0x0098090c};CHK{0:1:1:1}=VAL{0}
+#Gain
+ID{0x00980913};CHK{0:255:1:64}=VAL{73}
+#Power Line Frequency
+ID{0x00980918};CHK{0:2:1:2}=VAL{1}
+#White Balance Temperature
+ID{0x0098091a};CHK{0:10000:10:4000}=VAL{1230}
+#Sharpness
+ID{0x0098091b};CHK{0:255:1:24}=VAL{222}
+#Backlight Compensation
+ID{0x0098091c};CHK{0:1:1:0}=VAL{0}
+#Exposure, Auto
+ID{0x009a0901};CHK{0:3:1:3}=VAL{1}
+#Exposure (Absolute)
+ID{0x009a0902};CHK{1:10000:1:166}=VAL{4}
+#Exposure, Auto Priority
+ID{0x009a0903};CHK{0:1:1:0}=VAL{0}
+#LED1 Mode
+ID{0x0a046d05};CHK{0:3:1:3}=VAL{1}
+#LED1 Frequency
+ID{0x0a046d06};CHK{0:131:1:0}=VAL{0}
