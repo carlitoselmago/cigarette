@@ -4,7 +4,7 @@ import cv2
 import glob
 
 sizeSample=10
-samples =  np.empty((0,(sizeSample*sizeSample)))
+samples = np.empty((0, sizeSample**2))
 filename="smokes"
 
 
@@ -18,7 +18,7 @@ for file in glob.glob('train/*.png'):
 
 	thresh = cv2.adaptiveThreshold(blur,255,1,1,11,2)
 
-	roismall=cv2.resize(thresh, (sizeSample, sizeSample)) 
+	roismall=cv2.resize(thresh, (sizeSample, sizeSample))
 	cv2.imshow('norm',roismall)
 
 	key = cv2.waitKey(0)
@@ -27,11 +27,9 @@ for file in glob.glob('train/*.png'):
 		sys.exit()
 	else:
 		
-		sample = roismall.reshape((1,(sizeSample*sizeSample)))
+		sample = roismall.reshape((1, sizeSample**2))
 		samples = np.append(samples,sample,0)
 
-	print "training complete for "+file
-	
-
-np.savetxt("train/"+str(filename)+'-samples.data',samples)
+	im = cv2.imread(file)
+np.savetxt(f"train/{filename}-samples.data", samples)
 

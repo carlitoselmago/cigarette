@@ -20,12 +20,9 @@ class Knearest():
 
 		#######   training part    ############### 
 		samples = np.loadtxt(self.DataFolder+filename+'-samples.data',np.float32)
-		responses=[]
-		for i,sample in enumerate(samples):
-			responses.append(float(i))
-		
+		responses = [float(i) for i, sample in enumerate(samples)]
 		responses=np.asarray(responses,dtype=np.float32)
-		
+
 		responses = responses.reshape((responses.size,1))
 		self.modelNum = cv2.ml.KNearest_create()
 		self.modelNum.train(samples,cv2.ml.ROW_SAMPLE,responses)
@@ -33,10 +30,7 @@ class Knearest():
 	############################# testing part  #########################
 
 	def reverse(self,text):
-	    if len(text) <= 1:
-	        return text
-
-	    return self.reverse(text[1:]) + text[0]
+		return text if len(text) <= 1 else self.reverse(text[1:]) + text[0]
 
 	def knearest(self,im,mincontour=100,maxcountour=400):
 
@@ -151,21 +145,11 @@ class Knearest():
 		#cv2.imshow('img',symbolimg)
 		text=vision.getText(symbolimg,type,mincontour=150,maxcountour=350)
 
-		print text,"original value"
+		img = cv2.imread(file)
 		#palosNames=["pica","cor","rombo","trebol"]
-		
+
 		#print palosNames[int(text)]
-		if text is "":
-
-			return False
-		character=arrayNames[int(text)]
-
-		if str(character) == str(matchTarget):
-			
-			return True
-		else:
-
-			return False
+		return False if text is "" else str(arrayNames[int(text)]) == str(matchTarget)
 		
 
 	def testOcrFolderSingleTT(self,vision,folderUri,type,arrayNames,threshold):
@@ -211,8 +195,8 @@ class Knearest():
 		        file= os.path.join(path, name)
 		        filesList.append(file)
 
-		
-		
+
+
 		for tt in range(90,255):
 			threshold=tt
 			count=0
@@ -226,17 +210,9 @@ class Knearest():
 					if match:
 						matches+=1
 					count+=1
-				
+
 			if matches>bestScore:
 				bestThreshold=tt
 				bestScore=matches
-			print "threshold: "+str(tt)+" "+str(matches)+"/"+str(count)+" matches"
-		
-		
-
-		
-		print "::::::::::::::::::::::::::::::::"
-		print "BEST THRESHOLD IS "+str(bestThreshold)+" with "+str(bestScore)+"/"+str(count)+" matches"
-		print "::::::::::::::::::::::::::::::::"
 			
 
