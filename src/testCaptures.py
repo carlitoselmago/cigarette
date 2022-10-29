@@ -31,17 +31,14 @@ def isSmoking(img):
 	bestScoreX=0
 	bestScoreY=0
 	for needle in needles:
-		
+
 		score,scoreX,scoreY=FindSubImage(needle,img)
 		if score>bestScore:
 			bestScore=score
 			bestScoreX=scoreX
 			bestScoreY=scoreY
 
-	if bestScore>0.8:
-		return bestScoreX,bestScoreY
-	else:
-		return []
+	return (bestScoreX, bestScoreY) if bestScore>0.8 else []
 
 
 
@@ -49,6 +46,9 @@ def isSmoking(img):
 needles=[]
 loadNeedles()
 maxValue = 235
+
+# binarize
+thresh = 1
 
 for file in glob.glob('captures/*.jpg'):
 	"""
@@ -58,26 +58,23 @@ for file in glob.glob('captures/*.jpg'):
 	needle=needle.astype(np.float32)
 	"""
 	imgOriginal=cv2.imread(file)
-	
+
 	img=imgOriginal.copy()
 	img=img.astype(np.float32)
-	
+
 	img=cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-	# binarize
-	thresh = 1
-	
 	th,img = cv2.threshold(img, maxValue, 255,cv2.THRESH_BINARY)
 
 	#check if has smoke
-	
-	
+
+
 	#issmoking=FindSubImage(needle,img)
 	issmoking=isSmoking(img)
 	print(issmoking)
 	if len(issmoking)>0:
 
 		cv2.rectangle(imgOriginal,(issmoking[0]+10,issmoking[1]+10),(issmoking[0]+20,issmoking[1]+20), (0,120,145), 5)
-	
+
 	cv2.imshow("bla",imgOriginal)
 	cv2.imshow("blo",img)
 
@@ -85,5 +82,3 @@ for file in glob.glob('captures/*.jpg'):
 
 	if key == 27:  # (escape to quit)
 		sys.exit()
-	else:
-		pass

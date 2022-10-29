@@ -54,7 +54,7 @@ def draw_body_bone(frame,joints, jointPoints, color, joint0, joint1):
 	try:
 		start = (int(jointPoints[joint0].x), int(jointPoints[joint0].y))
 		end = (int(jointPoints[joint1].x), int(jointPoints[joint1].y))
-	
+
 		cv2.line(frame,(start),(end),color,5)
 	except:
 		pass
@@ -76,20 +76,17 @@ def getJointPosition(joints, jointPoints, joint):
 	if (joint0State == PyKinectV2.TrackingState_Inferred):
 		return
 
-	# ok, at least one is good 
+	# ok, at least one is good
 	try:
-		position = (int(jointPoints[joint].x), int(jointPoints[joint].y))
-		return position
+		return int(jointPoints[joint].x), int(jointPoints[joint].y)
 	except:
 		return False
 
 def midpoint(p1, p2):
-	midpoint= (int((p1[0]+p2[0])/2), int((p1[1]+p2[1])/2))
-	return midpoint
+	return int((p1[0]+p2[0])/2), int((p1[1]+p2[1])/2)
 
 def getdistance(p1,p2):
-	dist = int(math.sqrt( (p2[0] - p1[0])**2 + (p2[1] - p1[1])**2 ))
-	return dist
+	return int(math.sqrt( (p2[0] - p1[0])**2 + (p2[1] - p1[1])**2 ))
 
 def getSubRegion(img,cordinates):
 	img = img[cordinates[1] :cordinates[1] +  cordinates[3] , cordinates[0] : cordinates[0] + cordinates[2]]
@@ -138,43 +135,40 @@ def handOnMouth(index,frame, joints, jointPoints):
 			#hand on mouth
 			handonmouth[index]=delaytime
 
-	
+
 	if handonmouth[index]>0:
 		cv2.circle(frame,mouth, int(radius/2), (255,255,255), 8)
 		#case hand disapears (bug)
 		if not lefthand or not righthand:
 			handonmouth[index]=delaytime
 
-		
+
 		ROI=[mouth[0]-radius, mouth[1]-radius, int(radius*2), int(radius*2)]
 
-		
-	print handonmouth
+
+	delaytime=10
 	if handonmouth[index]>0:
 		handonmouth[index]-=1
 
-	if ROI:
-		return ROI
-	else:
-		return []
+	return ROI or []
 	
 
 
 def getSmokings(img):
 	imgOriginal=img
-	cv2.imwrite("captures/"+str(time.time())+".jpg",img)
+	cv2.imwrite(f"captures/{str(time.time())}.jpg", img)
 	img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-			
+
 	# binarize
 	thresh = 1
 	maxValue = 225
 	th,img = cv2.threshold(img, maxValue, 255,cv2.THRESH_BINARY)
-	
+
 	#blobs
 	#detector = cv2.SimpleBlobDetector()
 	#keypoints = detector.detect(img)
 	#img = cv2.drawKeypoints(imgOriginal, keypoints, np.array([]), (0,0,255), cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
-	
+
 	# Set up the SimpleBlobdetector with default parameters.
 	params = cv2.SimpleBlobDetector_Params()
 
@@ -205,9 +199,9 @@ def getSmokings(img):
 	# Detect blobs.
 	reversemask=255-img
 	keypoints = detector.detect(reversemask)
-	
+
 	im_with_keypoints = cv2.drawKeypoints(img, keypoints, np.array([]), (0,0,255), cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
-	
+
 	#img=im_with_keypoints
 	return im_with_keypoints,keypoints
 
@@ -240,29 +234,27 @@ def draw_body(frame, joints, jointPoints, color):
 def run():
 	
 	#SYNTH ::::::::::::::::::::::::::::::::
-	
+
 	# Roland JP-8000 Supersaw emulator.
 	freq = 100
 
 	s = Server(duplex=0).boot()
-	
-	synths=[]
-	
+
 	#1
-	
+
 	lfo2 = Sine(freq=freq).range(0.8, 0.2)
-	synths.append( SuperSaw(freq=freq, detune=lfo2, mul=0.2))
+	synths = [SuperSaw(freq=freq, detune=lfo2, mul=0.2)]
 	synths[0].mul=0
-	
+
 	#2
-	
+
 	lfo = Sine(freq=freq).range(0.1, 0.1)
 	lfoo = Sine(freq=.25, mul=3, add=10)
 	#osc = SuperSaw(freq=freq, detune=lfo4, mul=0.2)
 	synths.append( Blit(freq=[100, 99.7]*lfoo, harms=lfoo, mul=.3).out())
 	synths[1].mul=0
-	
-	
+
+
 	#3
 	"""
 	#ind = LinTable([(0,20), (200,5), (1000,2), (8191,1)])
@@ -277,18 +269,18 @@ def run():
 
 	fxs=[]
 	mm = Mixer(outs=2, chnls=len(synths), time=.025)
-	
+
 	for i,synth in enumerate(synths):
 		#fxs.append(Freeverb(mm[i], size=.8, damp=.8, mul=.5).out())
 		fxs.append(Delay(synths[i], delay=[.8,.8], feedback=.8, mul=1).out())
 		mm.addInput(i,synth)
 		mm.setAmp(i,1,.5)
-	
-	
+
+
 	s.start()
 
 	#END SYNTHS ::::::::::::::::::::::::::::::::::::
-	
+
 
 	global _bodies
 	ready=False
@@ -299,7 +291,7 @@ def run():
 		
 		#get color frame
 		if _kinect.has_new_color_frame():
-			
+
 			#ret, frame = cap.read()
 			frameOriginal = _kinect.get_last_color_frame()
 			frameOriginal=np.array(frameOriginal,dtype=np.uint8).reshape(shape)
@@ -314,11 +306,11 @@ def run():
 		#print skeletons
 
 		if _bodies is not None:
-			for i in range(0, _kinect.max_body_count):
+			for i in range(_kinect.max_body_count):
 				body = _bodies.bodies[i]
 				if not body.is_tracked: 
 					continue 
-				
+
 				joints = body.joints 
 				# convert joint coordinates to color space 
 				joint_points = _kinect.body_joints_to_color_space(joints)
@@ -327,7 +319,7 @@ def run():
 				#check hand on mouth
 				mouthwithhand=handOnMouth(i,frame,joints, joint_points)
 
-				
+
 				if len(mouthwithhand)>0:
 					#we got a ROI
 					#cv2.rectangle(frame,(mouthwithhand[0],mouthwithhand[1]),(mouthwithhand[2],mouthwithhand[3]), (0,120,145), 5)
@@ -355,7 +347,7 @@ def run():
 					frame=roi
 					#cv2.imshow("roi",roi)
 					"""
-				
+
 
 		if ready:
 			cv2.imshow(windowName,frame)
